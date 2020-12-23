@@ -69,4 +69,10 @@ public class Cell implements Comparable<Cell> {
     public boolean isAtSameColumn(Cell than) {
         return verticalDistance(than) == 0;
     }
+
+    public boolean shot() {
+        var shot = state == CellState.OCCUPIED;
+        state = (shot) ? CellState.HIT : CellState.MISS;
+        return shot;
+    }
 }
