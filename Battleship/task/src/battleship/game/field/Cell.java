@@ -1,6 +1,6 @@
 package battleship.game.field;
 
-public class Cell implements Comparable<Cell> {
+public class Cell implements Comparable <Cell>{
 
     private CellState state;
     private final int row;
@@ -16,6 +16,7 @@ public class Cell implements Comparable<Cell> {
     public String toString() {
         return state.toString();
     }
+
 
     @Override
     public int compareTo(Cell cell) {
@@ -54,6 +55,7 @@ public class Cell implements Comparable<Cell> {
         return isAdjacentSameRow(cell) || isAdjacentSameColumn(cell);
     }
 
+
     public boolean isAtSameRow(Cell than) {
         return horizontalDistance(than) == 0;
     }
@@ -63,7 +65,7 @@ public class Cell implements Comparable<Cell> {
     }
 
     public boolean shot() {
-        var shot = state == CellState.OCCUPIED;
+        var shot = state == CellState.OCCUPIED || state == CellState.HIT;
         state = (shot) ? CellState.HIT : CellState.MISS;
         return shot;
     }
@@ -74,5 +76,9 @@ public class Cell implements Comparable<Cell> {
 
     private boolean isAdjacentSameRow(Cell cell) {
         return this.row == cell.row && Math.abs(verticalDistance(cell)) == 1;
+    }
+
+    public boolean isHit() {
+        return state == CellState.HIT;
     }
 }

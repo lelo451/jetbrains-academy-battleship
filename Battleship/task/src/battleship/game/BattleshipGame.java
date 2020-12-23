@@ -4,18 +4,19 @@ import battleship.game.field.BattleshipField;
 import battleship.game.field.Cell;
 import battleship.game.ships.Ship;
 
-import java.io.IOException;
+import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.Optional;
 
 public class BattleshipGame {
     private final static int BATTLEFIELD_ROWS = 10;
-    private static final int MAX_NUM_OF_ROWS = 5;
+    private static final int MAX_NUM_OF_BOATS = 5;
     private final BattleshipField BATTLESHIP_FIELD;
     private final BattleshipGameDrawer BATTLESHIP_FIELD_DRAWER;
     private GameState state = GameState.ADDING_SHIPS;
 
     public BattleshipGame() {
-        BATTLESHIP_FIELD = new BattleshipField(BATTLEFIELD_ROWS, MAX_NUM_OF_ROWS);
+        BATTLESHIP_FIELD = new BattleshipField(BATTLEFIELD_ROWS, MAX_NUM_OF_BOATS);
         BATTLESHIP_FIELD_DRAWER = new BattleshipGameDrawer(BATTLESHIP_FIELD, this);
     }
 
@@ -44,8 +45,23 @@ public class BattleshipGame {
             throw new  Exception("Error! You entered the wrong coordinates!");
         }
 
-        return (cellPosition.get().shot()) ? "You hit a ship\n" : "You missed!\n";
+        return getShotOutcome(cellPosition.get());
     }
+
+    private String getShotOutcome(Cell target) {
+        String message;
+        var shot = target.shot();
+        if (shot && BATTLESHIP_FIELD.shipSunk(target)) {
+            message = (isFinished()) ? "You sank the last ship. You won. Congratulations!" :
+                    "You sank a ship! Specify a new target:";
+        } else if (shot) {
+            message = "You hit a ship! Try again:\n";
+        } else {
+            message = "You missed. Try again:\n";
+        }
+        return  message;
+    }
+
 
     @Override
     public String toString() {
@@ -63,8 +79,6 @@ public class BattleshipGame {
     void refreshState() {
         switch (state) {
             case FOG_OF_WAR:
-                state = GameState.SHIPS_VISIBLE;
-                break;
             case SHIPS_VISIBLE:
             case READY_FOR_STARTING:
                 state = GameState.FOG_OF_WAR;
@@ -104,6 +118,22 @@ public class BattleshipGame {
     private void startGameIfReady() {
         if (BATTLESHIP_FIELD.isFull()) {
             state = GameState.READY_FOR_STARTING;
+        }
+    }
+
+    public boolean isFinished() {
+        return Arrays.stream(BATTLESHIP_FIELD.getClass().getDeclaredFields())
+                .filter(field -> field.getName().equals("numOfBoats"))
+                .mapToInt(this::getNumOfBoats)
+                .allMatch(numOfBoats -> numOfBoats == 0);
+    }
+
+    private int getNumOfBoats(Field field) {
+        try {
+            field.setAccessible(true);
+            return field.getInt(BATTLESHIP_FIELD);
+        } catch (IllegalAccessException ignored) {
+            return -1;
         }
     }
 }

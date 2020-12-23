@@ -48,4 +48,5 @@ class BattleshipGameDrawer {
                 .collect(Collectors.joining(" "));
         return String.format("%c %s", 'A' + numRow, battleshipFieldRow);
     }
+
 }
